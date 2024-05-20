@@ -18,4 +18,8 @@ class Product extends Model
         'product_status',
         'total_price',
     ];
+    public function Category()
+    {
+        return $this->belongsTo(Category::class,'categorie_id');
+    }
 }

@@ -26,24 +26,29 @@ class CategoryResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('categorie_name')
                     ->required()
+                    ->label('اسم الصنف')
                     ->maxLength(255),
             ]);
     }
 
     public static function table(Table $table): Table
-    { 
+    {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('categorie_name')
+                    ->label('اسم الصنف')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
+                    ->label('وقت الاضافة')
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->label('وقت التعديل')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 //

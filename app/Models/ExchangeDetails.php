@@ -18,5 +18,12 @@ class ExchangeDetails extends Model
         'unit_price',
         'total_price',
     ];
-
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class);
+    }
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

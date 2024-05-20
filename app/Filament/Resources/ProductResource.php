@@ -9,9 +9,12 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+
+use function Laravel\Prompts\select;
 
 class ProductResource extends Resource
 {
@@ -25,48 +28,70 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('categorie_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('product_code')
-                    ->required()
-                    ->maxLength(255),
                 Forms\Components\TextInput::make('product_name')
                     ->required()
+                    ->label('اسم المنتج')
                     ->maxLength(255),
+                Forms\Components\TextInput::make('product_code')
+                    ->required()
+                    ->label('كود المنتج')
+                    ->maxLength(255),
+                Forms\Components\Select::make('categorie_id')
+                    ->relationship('Category', titleAttribute: 'categorie_name')
+                    ->searchable()
+                    ->preload()
+                    ->label('الصنف')
+                    ->required(),
                 Forms\Components\Textarea::make('product_description')
                     ->required()
                     ->maxLength(65535)
+                    ->label('وصف المنتج')
                     ->columnSpanFull(),
                 Forms\Components\Toggle::make('product_status')
+                    ->label('حالة المنتج')
+                    ->default(true)
                     ->required(),
-            ]);
+            ])->columns(1);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->numeric()
+                    ->label('#')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('product_name')
+                    ->label('اسم المنتج')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('product_code')
+                    ->label('رقم المنتج')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('categorie_id')
                     ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('product_code')
-                    ->searchable(),
+                    ->label('الصنف'),
                 Tables\Columns\TextColumn::make('product_name')
+                    ->label('اسم المنتج')
                     ->searchable(),
                 Tables\Columns\IconColumn::make('product_status')
+                    ->label('حالة المنتج')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
+                    ->label('وقت الاضافة')
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->label('وقت التعديل')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('categorie_id')
+                ->label('الصنف')
+                    ->relationship('Category', 'categorie_name')
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -81,14 +106,12 @@ class ProductResource extends Resource
                 Tables\Actions\CreateAction::make(),
             ]);
     }
-    
+
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
-    
+
     public static function getPages(): array
     {
         return [
@@ -97,5 +120,5 @@ class ProductResource extends Resource
             'view' => Pages\ViewProduct::route('/{record}'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
-    }    
+    }
 }

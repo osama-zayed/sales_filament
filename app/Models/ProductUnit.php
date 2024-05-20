@@ -15,4 +15,12 @@ class ProductUnit extends Model
         'unit_id',
         'product_price',
     ];
+    public function product()
+    {
+        return $this->belongsTo(Product::class,'categorie_id');
+    }
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class,'categorie_id');
+    }
 }

@@ -26,6 +26,7 @@ class UnitResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('unit_name')
                     ->required()
+                    ->label('وحده القياس')
                     ->maxLength(255),
             ]);
     }
@@ -34,16 +35,23 @@ class UnitResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('#')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('unit_name')
+                    ->label('وحده القياس')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
+                    ->label('وقت الاضافة')
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->label('وقت التعديل')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 //
@@ -61,14 +69,14 @@ class UnitResource extends Resource
                 Tables\Actions\CreateAction::make(),
             ]);
     }
-    
+
     public static function getRelations(): array
     {
         return [
             //
         ];
     }
-    
+
     public static function getPages(): array
     {
         return [
@@ -77,5 +85,5 @@ class UnitResource extends Resource
             'view' => Pages\ViewUnit::route('/{record}'),
             'edit' => Pages\EditUnit::route('/{record}/edit'),
         ];
-    }    
+    }
 }

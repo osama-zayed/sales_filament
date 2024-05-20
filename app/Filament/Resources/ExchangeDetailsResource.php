@@ -10,18 +10,15 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ExchangeDetailsResource extends Resource
 {
     protected static ?string $model = ExchangeDetails::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?int $navigationSort = 3;
     protected static ?string $navigationGroup = 'حركة مخزنية';
-    protected static ?string $modelLabel = 'تفاصيل الصرف';
-    protected static ?string $pluralLabel = 'تفاصيل الصرف';
+    protected static ?string $modelLabel = 'تفاصيل المبيعات';
+    protected static ?string $pluralLabel = 'تفاصيل المبيعات';
 
 
     public static function form(Form $form): Form
@@ -30,15 +27,24 @@ class ExchangeDetailsResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('exchange_id')
                     ->required()
+                    ->hidden()
                     ->numeric(),
-                Forms\Components\TextInput::make('product_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('unit_id')
-                    ->required()
-                    ->numeric(),
+                Forms\Components\Select::make('product_id')
+                    ->relationship('product', titleAttribute: 'product_name')
+                    ->label('المنتج')
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->required(),
+                Forms\Components\Select::make('unit_id')
+                    ->relationship('unit', titleAttribute: 'unit_name')
+                    ->label('الوحده')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 Forms\Components\TextInput::make('quantity')
                     ->required()
+                    ->label('الكمية')
                     ->numeric(),
                 Forms\Components\TextInput::make('unit_price')
                     ->required()
@@ -46,7 +52,7 @@ class ExchangeDetailsResource extends Resource
                 Forms\Components\TextInput::make('total_price')
                     ->required()
                     ->numeric(),
-            ]);
+            ])->columns(2);
     }
 
     public static function table(Table $table): Table
@@ -74,11 +80,14 @@ class ExchangeDetailsResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
+                    ->label('وقت الاضافة')
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->label('وقت التعديل')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 //
@@ -96,14 +105,14 @@ class ExchangeDetailsResource extends Resource
                 Tables\Actions\CreateAction::make(),
             ]);
     }
-    
+
     public static function getRelations(): array
     {
         return [
             //
         ];
     }
-    
+
     public static function getPages(): array
     {
         return [
@@ -112,5 +121,5 @@ class ExchangeDetailsResource extends Resource
             'view' => Pages\ViewExchangeDetails::route('/{record}'),
             'edit' => Pages\EditExchangeDetails::route('/{record}/edit'),
         ];
-    }    
+    }
 }

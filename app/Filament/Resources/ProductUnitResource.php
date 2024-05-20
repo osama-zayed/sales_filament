@@ -25,16 +25,25 @@ class ProductUnitResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('product_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('unit_id')
-                    ->required()
-                    ->numeric(),
+                Forms\Components\Select::make('product_id')
+                    ->relationship('product', titleAttribute: 'product_name')
+                    ->label('المنتج')
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->required(),
+                Forms\Components\Select::make('unit_id')
+                    ->relationship('unit', titleAttribute: 'unit_name')
+                    ->label('وحده القياس')
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->required(),
                 Forms\Components\TextInput::make('product_price')
+                    ->label('السعر')
                     ->required()
                     ->numeric(),
-            ]);
+            ])->columns(1);
     }
 
     public static function table(Table $table): Table
@@ -42,22 +51,29 @@ class ProductUnitResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('product_id')
+                    ->label('المنتج')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('unit_id')
+                ->label('وحده القياس')
+                
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('product_price')
+                    ->label('السعر')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
+                    ->label('وقت الاضافة')
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->label('وقت التعديل')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 //
@@ -75,14 +91,14 @@ class ProductUnitResource extends Resource
                 Tables\Actions\CreateAction::make(),
             ]);
     }
-    
+
     public static function getRelations(): array
     {
         return [
             //
         ];
     }
-    
+
     public static function getPages(): array
     {
         return [
@@ -91,5 +107,5 @@ class ProductUnitResource extends Resource
             'view' => Pages\ViewProductUnit::route('/{record}'),
             'edit' => Pages\EditProductUnit::route('/{record}/edit'),
         ];
-    }    
+    }
 }

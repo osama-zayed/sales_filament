@@ -17,21 +17,25 @@ class ExchangeResource extends Resource
 {
     protected static ?string $model = Exchange::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack'; 
-       protected static ?string $navigationGroup = 'حركة مخزنية';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'حركة مخزنية';
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $modelLabel = 'صرف';
-    protected static ?string $pluralLabel = 'الصرف';
+    protected static ?string $pluralLabel = 'المبيعات';
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\DatePicker::make('exchange_date')
+                    ->label('تاريخ المبيعات')
                     ->required(),
                 Forms\Components\TextInput::make('exchange_name')
+                    ->label('اسم العميل')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('total_amount')
+                    ->hidden()
                     ->required()
                     ->numeric(),
                 Forms\Components\Textarea::make('notes')
@@ -45,21 +49,27 @@ class ExchangeResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('exchange_date')
+                    ->label('تاريخ المبيعات')
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('exchange_name')
+                    ->label('اسم العميل')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('total_amount')
+                    ->label('اجمالي الفاتوره')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
+                    ->label('وقت الاضافة')
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                    Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
+                    ->label('وقت التعديل')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 //
@@ -77,14 +87,14 @@ class ExchangeResource extends Resource
                 Tables\Actions\CreateAction::make(),
             ]);
     }
-    
+
     public static function getRelations(): array
     {
         return [
             //
         ];
     }
-    
+
     public static function getPages(): array
     {
         return [
@@ -93,5 +103,5 @@ class ExchangeResource extends Resource
             'view' => Pages\ViewExchange::route('/{record}'),
             'edit' => Pages\EditExchange::route('/{record}/edit'),
         ];
-    }    
+    }
 }
