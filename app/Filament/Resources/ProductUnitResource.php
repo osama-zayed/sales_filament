@@ -18,6 +18,8 @@ class ProductUnitResource extends Resource
     protected static ?string $model = ProductUnit::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $modelLabel = 'وحدات قياس المنتج';
     protected static ?string $pluralLabel = 'وحدات قياس المنتجات';
 
@@ -50,13 +52,12 @@ class ProductUnitResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('product_id')
+                Tables\Columns\TextColumn::make('product.product_name')
                     ->label('المنتج')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('unit_id')
+                Tables\Columns\TextColumn::make('unit.unit_name')
                 ->label('وحده القياس')
-                
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('product_price')

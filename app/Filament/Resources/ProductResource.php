@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Product;
+use Doctrine\DBAL\Schema\Column;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -21,6 +22,8 @@ class ProductResource extends Resource
     protected static ?string $model = Product::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $modelLabel = 'منتج';
     protected static ?string $pluralLabel = 'المنتجات';
 
@@ -40,6 +43,7 @@ class ProductResource extends Resource
                     ->relationship('Category', titleAttribute: 'categorie_name')
                     ->searchable()
                     ->preload()
+                    ->columnSpan(2)
                     ->label('الصنف')
                     ->required(),
                 Forms\Components\Textarea::make('product_description')
@@ -50,8 +54,25 @@ class ProductResource extends Resource
                 Forms\Components\Toggle::make('product_status')
                     ->label('حالة المنتج')
                     ->default(true)
+                    ->columnSpan(2)
                     ->required(),
-            ])->columns(1);
+                Forms\Components\Repeater::make('product_unit_prices')
+                    ->schema([
+                        Forms\Components\Select::make('unit_id')
+                            ->relationship('units', 'unit_name')
+                            ->label('الوحدة')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                        Forms\Components\TextInput::make('product_price')
+                            ->label('السعر')
+                            ->required()
+                            ->numeric(),
+                    ])
+                    ->columnSpan(2)
+                    ->columns(2)
+                    ->label('أسعار الوحدات')
+            ])->columns(2);
     }
 
     public static function table(Table $table): Table
@@ -66,14 +87,10 @@ class ProductResource extends Resource
                     ->label('اسم المنتج')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('product_code')
-                    ->label('رقم المنتج')
+                    ->label('كود المنتج')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('categorie_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('Category.categorie_name')
                     ->label('الصنف'),
-                Tables\Columns\TextColumn::make('product_name')
-                    ->label('اسم المنتج')
-                    ->searchable(),
                 Tables\Columns\IconColumn::make('product_status')
                     ->label('حالة المنتج')
                     ->boolean(),
@@ -82,7 +99,7 @@ class ProductResource extends Resource
                     ->sortable()
                     ->label('وقت الاضافة')
                     ->toggleable(isToggledHiddenByDefault: true),
-                    Tables\Columns\TextColumn::make('updated_at')
+                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->label('وقت التعديل')
                     ->sortable()
@@ -90,7 +107,7 @@ class ProductResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('categorie_id')
-                ->label('الصنف')
+                    ->label('الصنف')
                     ->relationship('Category', 'categorie_name')
             ])
             ->actions([

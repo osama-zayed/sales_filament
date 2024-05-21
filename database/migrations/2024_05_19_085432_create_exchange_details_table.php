@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('exchange_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('exchange_id')->constrained('exchanges')->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            $table->foreignId('unit_id')->constrained('units')->cascadeOnDelete();
+            $table->unsignedBigInteger('exchange_id')->unsigned();
+            $table->integer('product_id')->unsigned();
+            $table->integer('unit_id')->unsigned();
             $table->integer('quantity');
             $table->decimal('unit_price', 10, 2);
             $table->decimal('total_price', 10, 2);
             $table->timestamps();
+            $table->foreign('exchange_id')->references('id')->on('exchanges')->onDelete('cascade');
+            $table->foreign('product_id')->references('id')->on('products');
+            $table->foreign('unit_id')->references('id')->on('units');
         });
     }
 

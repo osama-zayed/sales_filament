@@ -17,7 +17,7 @@ class SupplyDetailsResource extends Resource
 {
     protected static ?string $model = SupplyDetails::class;
     protected static ?string $navigationGroup = 'حركة مخزنية';
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 3;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $modelLabel = 'تفاصيل المشتريات';
     protected static ?string $pluralLabel = 'تفاصيل المشتريات';

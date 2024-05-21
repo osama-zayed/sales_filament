@@ -15,7 +15,7 @@ class ExchangeDetailsResource extends Resource
 {
     protected static ?string $model = ExchangeDetails::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 4;
     protected static ?string $navigationGroup = 'حركة مخزنية';
     protected static ?string $modelLabel = 'تفاصيل المبيعات';
     protected static ?string $pluralLabel = 'تفاصيل المبيعات';

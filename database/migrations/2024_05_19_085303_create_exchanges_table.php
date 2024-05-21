@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('exchanges', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->unsignedBigInteger('invoice_number');
             $table->date('exchange_date');
             $table->string('exchange_name');
             $table->decimal('total_amount', 10, 2);

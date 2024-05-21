@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('supplies', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->unsignedBigInteger('invoice_number');
             $table->date('supply_date');
             $table->string('supplier_name');
             $table->decimal('total_amount', 10, 2);

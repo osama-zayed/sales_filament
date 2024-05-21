@@ -11,8 +11,15 @@ class Exchange extends Model
     protected $table = 'exchanges';
     protected $fillable = [
         'id',
+        'invoice_number',
+        'total_amount',
         'exchange_name',
         'exchange_date',
         'notes',
     ];
+
+    public function exchangeDetails()
+    {
+        return $this->hasMany(ExchangeDetails::class);
+    }
 }

@@ -26,15 +26,24 @@ class SupplyResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('invoice_number')
+                ->label('رقم الفاتورة')
+                ->numeric()
+                ->required(),
                 Forms\Components\DatePicker::make('supply_date')
+                    ->default(today())
+                    ->label('تاريخ التوريد')
                     ->required(),
                 Forms\Components\TextInput::make('supplier_name')
                     ->required()
+                    ->label('اسم المورد')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('total_amount')
                     ->required()
+                    ->label('اجمالي السعر')
                     ->numeric(),
                 Forms\Components\Textarea::make('notes')
+                    ->label('الملاحظات')
                     ->maxLength(65535)
                     ->columnSpanFull(),
             ]);
@@ -44,20 +53,27 @@ class SupplyResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('invoice_number')
+                    ->date()
+                    ->label('رقم الفاتوره')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('supply_date')
                     ->date()
+                    ->label('تاريخ التوريد')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('supplier_name')
+                    ->label('اسم المورد')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('total_amount')
                     ->numeric()
+                    ->label('اجمالي السعر')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->label('وقت الاضافة')
                     ->toggleable(isToggledHiddenByDefault: true),
-                    Tables\Columns\TextColumn::make('updated_at')
+                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->label('وقت التعديل')
                     ->sortable()
@@ -80,14 +96,14 @@ class SupplyResource extends Resource
                 Tables\Actions\CreateAction::make(),
             ]);
     }
-    
+
     public static function getRelations(): array
     {
         return [
             //
         ];
     }
-    
+
     public static function getPages(): array
     {
         return [
@@ -96,5 +112,5 @@ class SupplyResource extends Resource
             'view' => Pages\ViewSupply::route('/{record}'),
             'edit' => Pages\EditSupply::route('/{record}/edit'),
         ];
-    }    
+    }
 }

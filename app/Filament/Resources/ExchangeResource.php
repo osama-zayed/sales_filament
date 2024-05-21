@@ -27,27 +27,79 @@ class ExchangeResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('invoice_number')
+                    ->label('رقم الفاتورة')
+                    ->numeric()
+                    ->required(),
                 Forms\Components\DatePicker::make('exchange_date')
                     ->label('تاريخ المبيعات')
+                    ->default(today())
                     ->required(),
                 Forms\Components\TextInput::make('exchange_name')
                     ->label('اسم العميل')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('total_amount')
-                    ->hidden()
                     ->required()
+                    ->label('اجمالي الفاتوره')
                     ->numeric(),
                 Forms\Components\Textarea::make('notes')
                     ->maxLength(65535)
+                    ->label('الملاحظات')
                     ->columnSpanFull(),
-            ]);
+                Forms\Components\Repeater::make('exchange_details')
+                    ->relationship('exchangeDetails')
+                    ->schema([
+                        Forms\Components\TextInput::make('exchange_id')
+                            ->required()
+                            ->hidden()
+                            ->numeric(),
+                        Forms\Components\Select::make('product_id')
+                            ->relationship('product', titleAttribute: 'product_name')
+                            ->label('المنتج')
+                            ->searchable()
+                            ->preload()
+                            ->live()
+                            ->required(),
+                        Forms\Components\Select::make('unit_id')
+                            ->relationship('unit', titleAttribute: 'unit_name')
+                            ->label('الوحده')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                            Forms\Components\TextInput::make('quantity')
+                            ->required()
+                            ->label('الكمية')
+                            ->numeric(),
+                        Forms\Components\TextInput::make('unit_price')
+                            ->required()
+                            ->label('سعر الوحده')
+                            ->numeric(),
+                            Forms\Components\TextInput::make('total_price')
+                            ->required()
+                            ->label('اجمالي السعر')
+                            ->numeric()
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                $quantity = $set('quantity');
+                                $unit_price = $set('unit_price');
+                                $set('total_price', $quantity * $unit_price);
+                            }),
+                    ])->columns(4)
+                    ->columnSpan(2)
+                    ->label('تفاصيل المبيعات'),
+            ])
+            ->columns(2);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('invoice_number')
+                ->date()
+                ->label('رقم الفاتوره')
+                ->sortable(),
                 Tables\Columns\TextColumn::make('exchange_date')
                     ->label('تاريخ المبيعات')
                     ->date()
@@ -64,7 +116,7 @@ class ExchangeResource extends Resource
                     ->sortable()
                     ->label('وقت الاضافة')
                     ->toggleable(isToggledHiddenByDefault: true),
-                    Tables\Columns\TextColumn::make('updated_at')
+                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->label('وقت التعديل')
                     ->sortable()

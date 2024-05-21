@@ -11,6 +11,7 @@ class Supply extends Model
     protected $table = 'supplies';
     protected $fillable = [
         'id',
+        'invoice_number',
         'supply_date',
         'supplier_name',
         'total_amount',
