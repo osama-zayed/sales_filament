@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
+use App\Filament\Resources\ProductResource\RelationManagers\UnitsRelationManager;
 use App\Models\Product;
 use Doctrine\DBAL\Schema\Column;
 use Filament\Forms;
@@ -45,7 +46,13 @@ class ProductResource extends Resource
                     ->preload()
                     ->columnSpan(2)
                     ->label('الصنف')
-                    ->required(),
+                    ->required()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('categorie_name')
+                        ->required()
+                        ->label('اسم الصنف')
+                        ->maxLength(255),
+                    ]),
                 Forms\Components\Textarea::make('product_description')
                     ->required()
                     ->maxLength(65535)
@@ -62,6 +69,12 @@ class ProductResource extends Resource
                             ->relationship('units', 'unit_name')
                             ->label('الوحدة')
                             ->searchable()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('unit_name')
+                                ->required()
+                                ->label('وحده القياس')
+                                ->maxLength(255),
+                            ])
                             ->preload()
                             ->required(),
                         Forms\Components\TextInput::make('product_price')
@@ -126,7 +139,9 @@ class ProductResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            UnitsRelationManager::class
+        ];
     }
 
     public static function getPages(): array

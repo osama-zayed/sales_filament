@@ -15,10 +15,11 @@ return new class extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('invoice_number');
             $table->date('supply_date');
+            $table->integer('inventory_id')->unsigned();
+            $table->foreign('inventory_id')->references('id')->on('inventories')->onDelete('cascade');
             $table->string('supplier_name');
             $table->decimal('total_amount', 10, 2);
             $table->text('notes')->nullable();
-
             $table->timestamps();
         });
     }

@@ -24,8 +24,8 @@ class Product extends Model
     }
     public function units()
     {
-        return $this->belongsToMany(Unit::class, 'product_units', 'product_id', 'unit_id')
-            ->withPivot('product_price')
+        return $this->belongsToMany(Unit::class, 'product_units')
+        ->withPivot(['product_price'])
             ->withTimestamps();
     }
 }

@@ -14,6 +14,7 @@ class Exchange extends Model
         'invoice_number',
         'total_amount',
         'exchange_name',
+        'inventory_id',
         'exchange_date',
         'notes',
     ];
@@ -21,5 +22,9 @@ class Exchange extends Model
     public function exchangeDetails()
     {
         return $this->hasMany(ExchangeDetails::class);
+    }
+    public function Inventory()
+    {
+        return $this->belongsTo(Inventory::class);
     }
 }
