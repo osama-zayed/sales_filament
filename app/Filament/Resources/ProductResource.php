@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Filament\Resources\ProductResource\RelationManagers\UnitsRelationManager;
+use App\Filament\Resources\ProductUnitResource\Pages\CreateProductUnit;
+use App\Filament\Resources\ProductUnitResource\Pages\EditProductUnit;
 use App\Models\Product;
 use Doctrine\DBAL\Schema\Column;
 use Filament\Forms;
@@ -63,28 +65,6 @@ class ProductResource extends Resource
                     ->default(true)
                     ->columnSpan(2)
                     ->required(),
-                Forms\Components\Repeater::make('product_unit_prices')
-                    ->schema([
-                        Forms\Components\Select::make('unit_id')
-                            ->relationship('units', 'unit_name')
-                            ->label('الوحدة')
-                            ->searchable()
-                            ->createOptionForm([
-                                Forms\Components\TextInput::make('unit_name')
-                                ->required()
-                                ->label('وحده القياس')
-                                ->maxLength(255),
-                            ])
-                            ->preload()
-                            ->required(),
-                        Forms\Components\TextInput::make('product_price')
-                            ->label('السعر')
-                            ->required()
-                            ->numeric(),
-                    ])
-                    ->columnSpan(2)
-                    ->columns(2)
-                    ->label('أسعار الوحدات')
             ])->columns(2);
     }
 
@@ -148,7 +128,7 @@ class ProductResource extends Resource
     {
         return [
             'index' => Pages\ListProducts::route('/'),
-            'create' => Pages\CreateProduct::route('/create'),
+            'create' => CreateProductUnit::route('/create'),
             'view' => Pages\ViewProduct::route('/{record}'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];

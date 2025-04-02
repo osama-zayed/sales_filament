@@ -22,7 +22,7 @@ class InventoryResource extends Resource
     protected static ?string $navigationGroup = 'حركة مخزنية';
 
     protected static ?string $modelLabel = 'مخزون المنتج';
-    protected static ?string $pluralLabel = 'المخزن';
+    protected static ?string $pluralLabel = 'المخازن';
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
@@ -56,6 +56,13 @@ class InventoryResource extends Resource
                     ->label('موقع المخزن'),
                 Tables\Columns\TextColumn::make('description')
                     ->label('وصف المخزن'),
+                // Tables\Columns\TextColumn::make('balance')
+                //     ->label('الرصيد المتبقي')
+                //     ->getStateUsing(function ($record) {
+                //         $totalSupplied = $record->supplies->sum('quantity');
+                //         $totalSpent = $record->expenses->sum('quantity');
+                //         return $totalSupplied - $totalSpent;
+                //     }),
             ])
             ->filters([
                 //
@@ -69,7 +76,7 @@ class InventoryResource extends Resource
                 ]),
             ])
             ->emptyStateActions([
-                               Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make(),
             ]);
     }
 

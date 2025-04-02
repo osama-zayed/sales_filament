@@ -206,9 +206,9 @@ class SupplyResource extends Resource
                             ->live()
                             ->reactive()
                             ->default(0.0)
-                            ->readonly()->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            ->readonly()
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                 $totalAmount = 0;
-                                dd("سس");
                                 $supplyDetails = $get('supplyDetails') ?? [];
                                 foreach ($supplyDetails as $detail) {
                                     $totalAmount += $detail['total_price'] ?? 0;

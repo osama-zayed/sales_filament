@@ -15,11 +15,11 @@ class Inventory extends Model
         'location',
         'description',
     ];
-    public function Supply()
+    public function supplies()
     {
         return $this->hasMany(Supply::class);
     }
-    public function Exchange()
+    public function expenses()
     {
         return $this->hasMany(Exchange::class);
     }

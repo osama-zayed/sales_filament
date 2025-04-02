@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\ExchangeResource\Widgets\ExchangeChart;
+use App\Filament\Resources\ProductResource\Widgets\StatsOverview;
+use App\Filament\Resources\SupplyResource\Widgets\SupplyChart;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -39,6 +42,9 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
+                StatsOverview::class,
+                SupplyChart::class,
+                ExchangeChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,

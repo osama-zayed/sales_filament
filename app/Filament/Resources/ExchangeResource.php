@@ -5,9 +5,11 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ExchangeResource\Pages;
 use App\Filament\Resources\ExchangeResource\RelationManagers\ExchangeDetailsRelationManager;
 use App\Models\Exchange;
+use App\Models\ExchangeDetails;
 use App\Models\Inventory;
 use App\Models\ProductUnit;
 use App\Models\Supply;
+use Filament\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -19,7 +21,10 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\DatePicker;
-
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Illuminate\Support\Facades\Session;
+use PhpParser\Node\Stmt\Global_;
 
 class ExchangeResource extends Resource
 {
@@ -31,7 +36,6 @@ class ExchangeResource extends Resource
 
     protected static ?string $modelLabel = 'صرف';
     protected static ?string $pluralLabel = 'المبيعات';
-
 
 
 
@@ -55,21 +59,8 @@ class ExchangeResource extends Resource
                     ->preload()
                     ->live()
                     ->required()
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('name')
-                            ->label('اسم المخزن')
-                            ->required()
-                            ->reactive(),
-                        Forms\Components\TextInput::make('location')
-                            ->label('موقع المخزن')
-                            ->required()
-                            ->reactive(),
-                        Forms\Components\TextInput::make('description')
-                            ->label('وصف المخزن')
-                            ->reactive(),
-                    ])
                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                        $set('inventory_id', $state);
+                        Session::put('inventory_id', $state);
                     }),
 
                 TextInput::make('exchange_name')
@@ -80,10 +71,12 @@ class ExchangeResource extends Resource
                     ->required()
                     ->label('اجمالي الفاتوره')
                     ->numeric()
-                    ->default(0.0)
+                    ->default(function (callable $get) {
+                        return Session::get('total_amount');
+                    })
                     ->live()
+                    ->readOnly()
                     ->reactive(),
-
                 Textarea::make('notes')
                     ->maxLength(65535)
                     ->label('الملاحظات')
@@ -97,161 +90,46 @@ class ExchangeResource extends Resource
                             ->searchable()
                             ->preload()
                             ->live()
-                            ->required()
-                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                $Inventory = $get('inventory_id');
-                                $unit_id = $get('unit_id');
-                                $quantity = $get('quantity') ?? 0;
-                                dd($Inventory);
-
-                                $productUnit = ProductUnit::where('product_id', $state)
-                                    ->where('unit_id', $unit_id)
-                                    ->first();
-                                if ($productUnit) {
-                                    $inventory = Supply::where('inventory_id', $Inventory)
-                                        ->whereHas('SupplyDetails', function ($query) use ($state) {
-                                            $query->where('product_id', $state);
-                                        })
-                                        ->whereHas('SupplyDetails', function ($query) use ($unit_id) {
-                                            $query->where('unit_id', $unit_id);
-                                        })
-                                        ->first();
-                                    if (!$inventory) {
-                                        Notification::make()
-                                            ->danger()
-                                            ->title('خطاء')
-                                            ->body('هذا المنتج غير موجود في المخزن')
-                                            ->send();
-                                        $set('max_quantity', 0);
-                                    }
-                                    if ($quantity > $inventory->quantity) {
-                                        Notification::make()
-                                            ->danger()
-                                            ->title('خطاء')
-                                            ->body('الكمية المتبقية في المخزن من هذا المنتج هي ' . $inventory->quantity)
-                                            ->send();
-                                        $set('quantity', $inventory->quantity);
-                                    }
-                                    if ($inventory) {
-                                        $set('unit_price', $productUnit->product_price);
-                                        $set('total_price', $get('quantity') * $productUnit->product_price);
-                                        $set('max_quantity', $inventory->quantity);
-                                    }
-                                    self::updateTotalAmount($get, $set);
-                                } else {
-                                    $set('quantity', 0);
-                                    $set('max_quantity', 0);
-                                }
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::updatePriceAndTotal($get, $set);
+                                self::updateRemainingQuantity($get, $set);
                             })
-                            ,
+                            ->required(),
                         Select::make('unit_id')
                             ->relationship('unit', 'unit_name')
                             ->label('وحده القياس')
                             ->searchable()
                             ->preload()
                             ->live()
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::updatePriceAndTotal($get, $set);
+                                self::updateRemainingQuantity($get, $set);
+                            })
                             ->required(),
-                        // ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                        //     $product_id = $get('product_id');
-                        //     $quantity = $get('quantity') ?? 0;
-                        //     $productUnit = ProductUnit::where('product_id', $product_id)
-                        //         ->where('unit_id', $state)
-                        //         ->first();
-                        //     if ($productUnit) {
-                        //         $inventory = Inventory::where('product_id', $product_id)
-                        //             ->where('unit_id', $state)
-                        //             ->first();
-                        //         if (!$inventory) {
-                        //             Notification::make()
-                        //                 ->danger()
-                        //                 ->title('خطاء')
-                        //                 ->body('هذا المنتج غير موجود في المخزن')
-                        //                 ->send();
-                        //             $set('total_price', $get('quantity') * $productUnit->product_price);
-                        //             $set('max_quantity', $inventory->quantity);
-                        //         }
-                        //         if ($quantity > $inventory->quantity) {
-                        //             Notification::make()
-                        //                 ->danger()
-                        //                 ->title('خطاء')
-                        //                 ->body('الكمية المتبقية في المخزن من هذا المنتج هي ' . $inventory->quantity)
-                        //                 ->send();
-                        //             $set('total_price', $get('quantity') * $productUnit->product_price);
-                        //             $set('max_quantity', $inventory->quantity);
-                        //         }
-                        //         if ($inventory) {
-                        //             $set('unit_price', $productUnit->product_price);
-                        //             $set('total_price', $get('quantity') * $productUnit->product_price);
-                        //             $set('max_quantity', $inventory->quantity);
-                        //         }
-                        //     } else {
-                        //         $set('quantity', 0);
-                        //         $set('max_quantity', 0);
-                        //     }
-                        // }),
                         TextInput::make('quantity')
                             ->label('الكمية')
                             ->required()
                             ->live()
                             ->numeric()
                             ->minValue(1)
+                            ->maxValue(function (callable $set, callable $get) {
+                                $maxQuantity = $get('max_quantity') ?? 0;
+                                return $maxQuantity;
+                            })
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                self::updatePriceAndTotal($get, $set);
+                                self::updateRemainingQuantity($get, $set);
+                            })
                             ->reactive(),
-                        // ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                        //     $product_id = $get('product_id');
-                        //     $unit_id = $get('unit_id');
-                        //     $productUnit = ProductUnit::where('product_id', $product_id)
-                        //         ->where('unit_id', $unit_id)
-                        //         ->first();
-                        //     if ($productUnit) {
-                        //         $inventory = Inventory::where('product_id', $product_id)
-                        //             ->where('unit_id', $unit_id)
-                        //             ->first();
-                        //         if ($inventory) {
-                        //             if ($state > $inventory->quantity) {
-                        //                 Notification::make()
-                        //                     ->danger()
-                        //                     ->title('خطاء')
-                        //                     ->body('الكمية المتبقية في المخزن من هذا المنتج هي ' . $inventory->quantity)
-                        //                     ->send();
-                        //                 $set('quantity', $inventory->quantity);
-                        //             }
-                        //             $set('unit_price', $productUnit->product_price);
-                        //             $set('total_price', $state * $productUnit->product_price);
-                        //         } else {
-                        //             Notification::make()
-                        //                 ->danger()
-                        //                 ->title('خطاء')->body('هذا المنتج غير موجود في المخزن')
-                        //                 ->send();
-                        //             $set('quantity', 0);
-                        //             $set('max_quantity', 0);
-                        //         }
-                        //     } else {
-                        //         Notification::make()
-                        //             ->danger()
-                        //             ->title('خطاء')
-                        //             ->body('المنتج لا يحتوي على وحدة القياس')
-                        //             ->send();
-                        //         $set('quantity', 0);
-                        //         $set('max_quantity', 0);
-                        //     }
-                        // })
-                        // ->extraAttributes(function (callable $get) {
-                        //     $product_id = $get('product_id');
-                        //     $unit_id = $get('unit_id');
-                        //     $inventory = Inventory::where('product_id', $product_id)
-                        //         ->where('unit_id', $unit_id)
-                        //         ->first();
-                        //     return [
-                        //         'max' => $inventory ? $inventory->quantity : 0
-                        //     ];
-                        // }),
                         TextInput::make('unit_price')
                             ->label('سعر الوحدة')
                             ->required()
                             ->numeric()
                             ->live()
                             ->reactive()
-                            ->default(0.0)
+                            ->default(function (callable $get) {
+                                return $get('unit_price');
+                            })
                             ->readonly(),
                         TextInput::make('total_price')
                             ->label('السعر الاجمالي')
@@ -259,22 +137,81 @@ class ExchangeResource extends Resource
                             ->numeric()
                             ->live()
                             ->reactive()
-                            ->default(0.0)
+                            ->default(function (callable $get) {
+                                return $get('total_price');
+                            })
                             ->readonly(),
                     ])
                     ->label('تفاصيل الصرف')
                     ->columns(3)
                     ->columnSpanFull()
                     ->live()
-                    ->reactive()
-                    ->afterStateUpdated(function (callable $set, callable $get) {
-                        self::updateTotalAmount($get, $set);
-                    }),
+                    ->required()
+                    ->afterStateUpdated(function (Get $get, Set $set) {
+                        self::updatePriceAndTotal($get, $set);
+                        self::updateRemainingQuantity($get, $set);
+                    })
+                    // ->deleteAction(
+                    //     fn (Action $action) => $action->after(fn (Get $get, Set $set) => self::updateTotal($get, $set)),
+                    // )
+                    ->reorderable(false)
             ])
             ->columns(2);
     }
 
+    public static function updatePriceAndTotal(Get $get, Set $set)
+    {
+        $selectedProducts = collect($get('product_id'));
+        $selectedUnits = collect($get('unit_id'));
+        $quantity = collect($get('quantity'));
 
+        if (!$selectedProducts->isEmpty() && !$selectedUnits->isEmpty() && !$quantity->isEmpty()) {
+            $prices = ProductUnit::where('product_id', $selectedProducts)
+                ->where('unit_id', $selectedUnits)
+                ->pluck('product_price', 'id')->first();
+            $total_price = $prices * $quantity->first();
+            $set('unit_price', $prices);
+            $set('total_price', $total_price);
+            Session::put('total_amount',  $total_price);
+        }
+    }
+
+    public static function updateRemainingQuantity(Get $get, Set $set)
+    {
+        $selectedProducts = collect($get('product_id'));
+        $selectedUnits = collect($get('unit_id'));
+        $quantity = collect($get('quantity'));
+        $inventoryId = Session::get('inventory_id');
+
+        if (!$selectedProducts->isEmpty() && !$selectedUnits->isEmpty() && $inventoryId && !$quantity->isEmpty()) {
+            $inventory = Supply::where('inventory_id', $inventoryId)
+                ->whereHas('SupplyDetails', function ($query) use ($selectedProducts, $selectedUnits) {
+                    $query->whereIn('product_id', $selectedProducts)
+                        ->whereIn('unit_id', $selectedUnits);
+                })
+                ->with('SupplyDetails')
+                ->get();
+
+            $totalSuppliedQuantity = $inventory->sum(function ($supply) {
+                return $supply->SupplyDetails->sum('quantity');
+            });
+
+            $totalUsedQuantity = ExchangeDetails::whereIn('product_id', $selectedProducts)
+                ->whereIn('unit_id', $selectedUnits)
+                ->sum('quantity');
+
+            $remainingQuantity = $totalSuppliedQuantity - $totalUsedQuantity;
+            $set('max_quantity', $remainingQuantity);
+
+            if ($quantity->first() > $remainingQuantity) {
+                Notification::make()
+                    ->danger()
+                    ->title('خطاء')
+                    ->body('الكمية المتبقية في المخزن من هذا المنتج هي ' . $remainingQuantity)
+                    ->send();
+            }
+        }
+    }
     public static function table(Table $table): Table
     {
         return $table
