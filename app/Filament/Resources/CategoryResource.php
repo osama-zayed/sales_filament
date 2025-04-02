@@ -30,6 +30,11 @@ class CategoryResource extends Resource
                     ->required()
                     ->label('اسم الصنف')
                     ->maxLength(255),
+                Forms\Components\FileUpload::make('image')
+                    ->columnSpanFull()
+                    ->label(__('helper.image'))
+                    ->required()
+                    ->directory('Category')
             ]);
     }
 
@@ -45,7 +50,7 @@ class CategoryResource extends Resource
                     ->sortable()
                     ->label('وقت الاضافة')
                     ->toggleable(isToggledHiddenByDefault: true),
-                    Tables\Columns\TextColumn::make('updated_at')
+                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->label('وقت التعديل')
                     ->sortable()
